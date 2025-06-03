@@ -404,7 +404,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-!SineBlazorDemo/bin/
-!SineBlazorDemo/bin/Release/
-!SineBlazorDemo/bin/Release/net8.0/
-!SineBlazorDemo/bin/Release/net8.0/publish/
+# Remove exceptions for publish folders
+# !SineBlazorDemo/bin/
+# !SineBlazorDemo/bin/Release/
+# !SineBlazorDemo/bin/Release/net8.0/
+# !SineBlazorDemo/bin/Release/net8.0/publish/
