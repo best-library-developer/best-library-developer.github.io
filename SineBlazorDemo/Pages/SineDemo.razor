@@ -1,0 +1,228 @@
+@page "/sine-demo"
+@using SineLibrary
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="container">
+    <h3>Sine Wave Signal Processing Demo</h3>
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Signal Parameters</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="amplitude" class="form-label">Amplitude</label>
+                        <input type="range" class="form-range" id="amplitude" min="0" max="2" step="0.1" @bind="amplitude" @bind:event="oninput">
+                        <span>@amplitude</span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label">Frequency (Hz)</label>
+                        <input type="range" class="form-range" id="frequency" min="1" max="100" step="1" @bind="frequency" @bind:event="oninput">
+                        <span>@frequency Hz</span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phase" class="form-label">Phase (radians)</label>
+                        <input type="range" class="form-range" id="phase" min="0" max="6.28" step="0.1" @bind="phase" @bind:event="oninput">
+                        <span>@phase rad</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Signal Type</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="signalType" id="sineType" value="Sine" checked @onchange="@(() => signalType = "Sine")">
+                            <label class="form-check-label" for="sineType">
+                                Basic Sine Wave
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="signalType" id="amType" value="AM" @onchange="@(() => signalType = "AM")">
+                            <label class="form-check-label" for="amType">
+                                Amplitude Modulation (AM)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="signalType" id="fmType" value="FM" @onchange="@(() => signalType = "FM")">
+                            <label class="form-check-label" for="fmType">
+                                Frequency Modulation (FM)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <button class="btn btn-primary me-2" @onclick="StartSignalGeneration" disabled="@isGenerating">Generate Signal</button>
+            <button class="btn btn-danger" @onclick="StopSignalGeneration" disabled="@(!isGenerating)">Stop</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">Signal Visualization</div>
+                <div class="card-body">
+                    <div id="chartContainer" style="height: 400px; width: 100%">
+                        <div id="chartLoadingIndicator" style="text-align: center; padding: 20px;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading chart...</span>
+                            </div>
+                            <p>Initializing chart...</p>
+                        </div>
+                        <canvas id="sineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>Error:</strong> @errorMessage
+            <button type="button" class="btn-close float-end" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+</div>
+
+@code {
+    private double amplitude = 1.0;
+    private double frequency = 10.0;
+    private double phase = 0.0;
+    private bool isGenerating = false;
+    private bool chartInitialized = false;
+    private string signalType = "Sine";
+    private string? errorMessage;
+    private SineProcessor _processor = new();
+    private readonly int sampleRate = 1000;
+    private readonly double duration = 1.0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Allow some time for DOM to fully initialize
+                await Task.Delay(500);
+                
+                var result = await JS.InvokeAsync<bool>("initSineChart");
+                chartInitialized = result;
+                
+                if (result)
+                {
+                    await JS.InvokeVoidAsync("document.getElementById", "chartLoadingIndicator", "style.display", "none");
+                    await GenerateAndDisplaySignal();
+                }
+                else
+                {
+                    errorMessage = "Failed to initialize chart. Please check browser console for details.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error initializing chart: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task StartSignalGeneration()
+    {
+        try
+        {
+            if (!chartInitialized)
+            {
+                var result = await JS.InvokeAsync<bool>("initSineChart");
+                chartInitialized = result;
+                
+                if (!result)
+                {
+                    errorMessage = "Chart initialization failed. Please reload the page.";
+                    return;
+                }
+            }
+            
+            isGenerating = true;
+            await GenerateAndDisplaySignal();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error generating signal: {ex.Message}";
+            isGenerating = false;
+        }
+    }
+
+    private void StopSignalGeneration()
+    {
+        isGenerating = false;
+        _processor.StopGeneration();
+    }
+
+    private async Task GenerateAndDisplaySignal()
+    {
+        try
+        {
+            double[] signal;
+            var timeArray = _processor.GenerateTimeArray(duration, sampleRate);
+            
+            // Generate the selected signal type
+            switch (signalType)
+            {
+                case "AM":
+                    // Use current frequency as carrier frequency and 1/10th as message frequency
+                    signal = _processor.GenerateAmplitudeModulatedSine(
+                        amplitude, frequency, 0.5, frequency / 10.0, duration, sampleRate);
+                    break;
+                
+                case "FM":
+                    // Use current frequency as carrier frequency and 1/5th as message frequency
+                    signal = _processor.GenerateFrequencyModulatedSine(
+                        amplitude, frequency, 2.0, frequency / 5.0, duration, sampleRate);
+                    break;
+                
+                default: // "Sine"
+                    signal = _processor.GenerateSineWave(amplitude, frequency, phase, duration, sampleRate);
+                    break;
+            }
+            
+            var success = await JS.InvokeAsync<bool>("updateSineChart", timeArray, signal, signalType);
+            
+            if (!success)
+            {
+                errorMessage = "Failed to update chart. Please check browser console for details.";
+            }
+            else
+            {
+                errorMessage = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating chart: {ex.Message}";
+            isGenerating = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        StopSignalGeneration();
+        
+        try
+        {
+            JS.InvokeVoidAsync("destroySineChart");
+        }
+        catch
+        {
+            // Ignore disposal errors
+        }
+    }
+}

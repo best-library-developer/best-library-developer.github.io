@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**/*</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/bin/**/*</DefaultItemExcludes>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(MSBuildProjectName) == 'SineBlazorDemo'">
+    <RunCommand>dotnet</RunCommand>
+    <RunArguments>run</RunArguments>
+    <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+  </PropertyGroup>
+</Project>

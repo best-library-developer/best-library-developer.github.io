@@ -1,0 +1,13 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sine Signal Processing</PageTitle>
+
+@code {
+    protected override void OnInitialized()
+    {
+        NavigationManager.NavigateTo("sine-demo");
+    }
+}
