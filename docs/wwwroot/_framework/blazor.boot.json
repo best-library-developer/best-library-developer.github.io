@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "SineBlazorDemo",
   "resources": {
-    "hash": "sha256-vT5A4ZQXeJPBS1h9BfgjfzfjCQi8soupjVl6rnXk2No=",
+    "hash": "sha256-aTHcycWr6nKjA7FapHLmXy9D/rAaKpBy+ZiT30+jU78=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-RiGT44TFZmHOY+Oqvb8o8r+BJVWex6+dPxFxrOiWvFY="
     },
@@ -32,7 +32,7 @@
       "Microsoft.Extensions.Primitives.wasm": "sha256-Bi1hyBMWneH/ByWbqT/pNe0B7I/NQFklzD2g3Whdqlk=",
       "Microsoft.JSInterop.wasm": "sha256-0GG+g0cgPnGA+ZHDrJaEP1QvYXd0cyh9LdhARt1WpMA=",
       "Microsoft.JSInterop.WebAssembly.wasm": "sha256-Tv5EkmGlvSfLMzOUcQMoh+dFCyx7bJsnc6031Mtr5fs=",
-      "SineBlazorDemo.wasm": "sha256-CBoYhRIV8tOBTIXhkAEVC8lMZS5YDCIxa542s1zEpnk=",
+      "SineBlazorDemo.wasm": "sha256-UYms4QIbxiyWMv685Elu0c+aprZaMJZ85y9mAAC9wIo=",
       "SineLibrary.wasm": "sha256-yB46Tku3QP5z+b3N4R/6e+sn+ewjlbv1yLuLLgrXUQQ=",
       "System.Collections.Concurrent.wasm": "sha256-uDiucUX/OnmcHjE9wcdyphPhJT5YmNIeQ1bp5FjiAKA=",
       "System.Collections.wasm": "sha256-8pU3TcqJbjKUZLhyMbaU7Tlx1I6Eyyy+jTo3uw8sTHc=",
